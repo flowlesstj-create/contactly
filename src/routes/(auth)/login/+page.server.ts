@@ -20,6 +20,11 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	default: async (event) => {
 		const redirectTo = event.url.searchParams.get('redirectTo');
+		// Validate redirectTo against open redirect attacks
+		const allowedPaths = ['/account', '/contacts', '/pricing'];
+		const safeRedirectTo = redirectTo && 
+			(redirectTo === '/' || (redirectTo.startsWith('/') && !redirectTo.startsWith('//') && allowedPaths.some(p => redirectTo.startsWith(p)))) 
+			? redirectTo : null;
 		const form = await superValidate(event, zod(loginUserSchema));
 		if (!form.valid) {
 			return fail(400, { form });
