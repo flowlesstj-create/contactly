@@ -10,22 +10,22 @@ const testUsers = [
 	{
 		full_name: 'Mark Ambro',
 		email: 'mark@me.com',
-		password: 'password'
+		password: process.env.SEED_USER_PASSWORD || 'password'
 	},
 	{
 		full_name: 'Test User 1',
 		email: 't1@t.com',
-		password: 'password'
+		password: process.env.SEED_USER_PASSWORD || 'password'
 	},
 	{
 		full_name: 'Test User 2',
 		email: 't2@t.com',
-		password: 'password'
+		password: process.env.SEED_USER_PASSWORD || 'password'
 	},
 	{
 		full_name: 'Test User 3',
 		email: 't3@t.com',
-		password: 'password'
+		password: process.env.SEED_USER_PASSWORD || 'password'
 	}
 ];
 
