@@ -34,8 +34,8 @@ export const actions: Actions = {
 			}
 		});
 		if (AuthError) {
-			return setError(form, 'An error occurred while registering.');
+			return setError(form, 'root', 'An error occurred while registering.');
 		}
-		return { form };
+		throw redirect(302, '/login');
 	}
 };

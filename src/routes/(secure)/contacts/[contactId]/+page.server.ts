@@ -16,6 +16,7 @@ export const load: PageServerLoad = async (event) => {
 			.from('contacts')
 			.select('*')
 			.eq('id', contact_id)
+			.eq('user_id', session.user.id)
 			.limit(1)
 			.maybeSingle();
 
@@ -39,6 +40,22 @@ export const actions: Actions = {
 			throw error(401, 'Unauthorized');
 		}
 
+		// Verify contact ownership before allowing update
+		const { data: existingContact, error: fetchError } = await event.locals.supabase
+			.from('contacts')
+			.select('id')
+			.eq('id', event.params.contactId)
+			.eq('user_id', session.user.id)
+			.maybeSingle();
+
+		if (fetchError) {
+			throw error(500, 'Error verifying contact ownership.');
+		}
+
+		if (!existingContact) {
+			throw error(404, 'Contact not found or you do not have permission to update it.');
+		}
+
 		const updateContactForm = await superValidate(event, zod(createContactSchema));
 
 		if (!updateContactForm.valid) {
@@ -50,14 +67,13 @@ export const actions: Actions = {
 		const { error: updateContactError } = await event.locals.supabase
 			.from('contacts')
 			.update(updateContactForm.data)
-			.eq('id', event.params.contactId);
+			.eq('id', event.params.contactId)
+			.eq('user_id', session.user.id);
 
 		if (updateContactError) {
-			return setError(updateContactForm, 'Error updating contact, please try again later.');
+			return fail(500, setError(updateContactForm, 'Error updating contact, please try again later.'));
 		}
 
-		return {
-			updateContactForm
-		};
+		throw redirect(303, '/contacts');
 	}
 };

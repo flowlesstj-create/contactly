@@ -100,7 +100,8 @@ export const actions: Actions = {
 		const { error: deleteContactError } = await event.locals.supabase
 			.from('contacts')
 			.delete()
-			.eq('id', deleteContactForm.data.id);
+			.eq('id', deleteContactForm.data.id)
+			.eq('user_id', session.user.id);
 
 		if (deleteContactError) {
 			return setError(deleteContactForm, 'Error deleting contact');

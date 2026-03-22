@@ -10,6 +10,9 @@ import { stripe } from '$lib/server/stripe';
 import { upsertProductRecord } from '$lib/server/stripe/products';
 
 export async function startSupabase() {
+	if (process.env.NODE_ENV === 'production') {
+		throw new Error('startSupabase() should only be used in development');
+	}
 	const port = await detect(54322);
 
 	if (port !== 54322) {
@@ -19,15 +22,27 @@ export async function startSupabase() {
 }
 
 export async function clearSupabaseData() {
+	if (process.env.NODE_ENV === 'production') {
+		throw new Error('clearSupabaseData() should only be used in development');
+	}
 	const client = new pg.Client({
 		connectionString: ENV.SUPABASE_DB_URL
 	});
-	await client.connect();
-	await client.query('TRUNCATE auth.users CASCADE');
-	await client.query('TRUNCATE public.billing_customers CASCADE');
-	await client.query('TRUNCATE public.billing_products CASCADE');
-	await client.query('TRUNCATE public.billing_subscriptions CASCADE');
-	await client.query('TRUNCATE public.contacts CASCADE');
+	try {
+		await client.connect();
+		await client.query('BEGIN');
+		await client.query('TRUNCATE auth.users CASCADE');
+		await client.query('TRUNCATE public.billing_customers CASCADE');
+		await client.query('TRUNCATE public.billing_products CASCADE');
+		await client.query('TRUNCATE public.billing_subscriptions CASCADE');
+		await client.query('TRUNCATE public.contacts CASCADE');
+		await client.query('COMMIT');
+	} catch (error) {
+		await client.query('ROLLBACK');
+		throw error;
+	} finally {
+		await client.end();
+	}
 }
 
 type CreateUser = Omit<z.infer<typeof registerUserSchema>, 'passwordConfirm'>;
@@ -42,8 +57,6 @@ export async function createUser(user: CreateUser) {
 			}
 		}
 	});
-
-	await supabaseAdmin.auth.signOut();
 
 	if (authError || !authData.user) {
 		throw new Error('Error creating user');

@@ -32,7 +32,7 @@ Install deps with pnpm
 Start local Supabase instance then, run development server locally
 
 ```bash
-  pnpm supbase start && pnpm dev
+  pnpm supabase start && pnpm dev
 ```
 
 ## Authors
