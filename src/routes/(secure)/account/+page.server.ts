@@ -56,7 +56,7 @@ export const actions: Actions = {
 			.update(profileForm.data)
 			.eq('id', session.user.id);
 		if (profileError) {
-			return setError(profileForm, 'Error updating profile');
+			return setError(profileForm, null, 'Error updating profile');
 		}
 		return {
 			profileForm
@@ -109,7 +109,7 @@ export const actions: Actions = {
 		});
 
 		if (passwordError) {
-			return setError(passwordForm, 'Error updating password');
+			return setError(passwordForm, null, 'Error updating password');
 		}
 
 		return {
